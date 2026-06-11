@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>我的研究生三年</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#14231D" />
+<link rel="manifest" href="manifest.json" />
+<style>
+  :root {
+    --bg: #FAFBF8; --grid: #E4E9E2; --ink: #18241F; --ink-soft: #5C6B63;
+    --copper: #B5552D; --copper-soft: #F3E2D7; --copper-bright: #E8A87E;
+    --silicon: #2F6F6A; --silicon-soft: #DDEAE7;
+    --gold: #9A7B2D; --gold-soft: #F0E8D2;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+    padding-bottom: 60px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+  button { font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; padding: 0; }
+  button:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
+
+  /* 头部 */
+  header {
+    position: relative; overflow: hidden;
+    background: linear-gradient(150deg, #14231D 0%, #1C3830 55%, #265048 100%);
+    border-radius: 0 0 24px 24px;
+    padding: calc(env(safe-area-inset-top, 0px) + 36px) 20px 28px;
+  }
+  .glow { position: absolute; border-radius: 50%; pointer-events: none; }
+  .glow-a { width: 260px; height: 260px; right: -80px; top: -90px;
+    background: radial-gradient(circle, rgba(224,141,95,.28) 0%, transparent 70%); }
+  .glow-b { width: 220px; height: 220px; left: -70px; bottom: -110px;
+    background: radial-gradient(circle, rgba(127,181,174,.22) 0%, transparent 70%); }
+  .hero { position: relative; max-width: 640px; margin: 0 auto; }
+  .eyebrow { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--copper-bright); }
+  h1 { margin: 8px 0 0; font-size: 28px; line-height: 1.2; color: var(--bg); }
+  .sub { margin: 6px 0 0; font-size: 14px; color: rgba(250,251,248,.6); }
+  .prog-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: rgba(250,251,248,.55); margin: 20px 0 8px; }
+  .prog-pct { font-size: 14px; font-weight: 700; color: var(--copper-bright); }
+  .pipe { display: flex; gap: 4px; }
+  .pipe button {
+    flex: 1; position: relative; overflow: hidden; border-radius: 8px; height: 40px;
+    background: rgba(250,251,248,.10); transition: box-shadow .2s;
+  }
+  .pipe button.active { box-shadow: inset 0 0 0 2px var(--bg); }
+  .pipe .fill { position: absolute; left: 0; right: 0; bottom: 0; transition: height .5s; }
+  .pipe .lbl { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 500; color: rgba(250,251,248,.85); line-height: 1.1; text-align: center; }
+  .pipe-hint { font-size: 10px; color: rgba(250,251,248,.45); margin-top: 8px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: rgba(250,251,248,.55); margin-top: 20px; }
+  .stats b { color: var(--bg); font-weight: 600; }
+  .stats .save { margin-left: auto; }
+
+  /* 导航 */
+  nav {
+    position: sticky; top: 8px; z-index: 20; display: flex; gap: 4px;
+    margin-top: 20px; padding: 6px; border-radius: 999px;
+    background: rgba(250,251,248,.92); border: 1px solid var(--grid);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 16px rgba(24,36,31,.08);
+  }
+  nav button {
+    flex: 1; padding: 8px 0; border-radius: 999px; font-size: 12px; font-weight: 500;
+    color: var(--ink-soft); transition: all .2s;
+  }
+  nav button.active { background: var(--ink); color: var(--bg); box-shadow: 0 2px 8px rgba(24,36,31,.25); }
+
+  /* 卡片 */
+  .card {
+    background: #fff; border: 1px solid var(--grid); border-radius: 14px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(24,36,31,.04), 0 6px 20px rgba(24,36,31,.05);
+    margin-top: 16px; animation: fade .35s ease both;
+  }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  .card-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--grid); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .card-head h2 { margin: 0; font-size: 15px; }
+  .card-head .meta { margin-left: auto; font-size: 12px; color: var(--ink-soft); }
+  .group-head { padding: 10px 16px; border-bottom: 1px solid var(--grid); font-size: 12px; font-weight: 600; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li + li { border-top: 1px solid #F0F3EE; }
+  .item {
+    width: 100%; display: flex; align-items: flex-start; gap: 12px;
+    padding: 11px 16px; text-align: left; font-size: 14px; transition: background .15s;
+  }
+  .item:active { background: #F4F6F2; }
+  .ck { width: 19px; height: 19px; border-radius: 50%; border: 2px solid var(--grid); flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; transition: all .15s; }
+  .item.done .ck { border-color: transparent; }
+  .item.done .t { color: var(--ink-soft); text-decoration: line-through; }
+  .t { display: block; }
+  .n { display: block; font-size: 12px; color: var(--ink-soft); margin-top: 2px; text-decoration: none !important; }
+
+  .sem-bar { border-radius: 14px; padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-top: 16px; }
+  .sem-bar .name { font-size: 17px; font-weight: 700; }
+  .sem-bar .theme { font-size: 14px; }
+  .sem-bar .meta { margin-left: auto; font-size: 12px; color: var(--ink-soft); }
+
+  .tip { font-size: 13px; color: var(--ink-soft); padding: 0 4px; margin-top: 16px; }
+  .hint-row { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--ink-soft); margin-top: 20px; }
+
+  /* 刷题 */
+  .counter { padding: 20px; text-align: center; }
+  .counter-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); text-align: left; }
+  .counter-row { display: flex; align-items: center; justify-content: center; gap: 22px; margin-top: 10px; }
+  .big { font-size: 48px; font-weight: 700; line-height: 1; }
+  .unit { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+  .round { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .round.minus { border: 1px solid var(--grid); color: var(--ink-soft); }
+  .round.plus { background: var(--copper); color: #fff; box-shadow: 0 2px 8px rgba(181,85,45,.3); }
+  .bar { height: 8px; border-radius: 999px; background: var(--copper-soft); overflow: hidden; position: relative; margin-top: 20px; }
+  .bar .f { height: 100%; background: var(--copper); transition: width .5s; }
+  .bar .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--bg); }
+  .marks { display: flex; justify-content: space-between; font-size: 10px; color: var(--ink-soft); margin-top: 6px; }
+  .marks .hit { color: var(--copper); }
+
+  /* 输入 */
+  .input-card { padding: 12px; }
+  textarea {
+    width: 100%; resize: none; border: 1px solid var(--grid); border-radius: 8px;
+    background: var(--bg); color: var(--ink); padding: 10px; font: inherit; font-size: 14px;
+  }
+  .input-foot { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .pill { padding: 7px 20px; border-radius: 999px; font-size: 14px; font-weight: 500; color: #fff; }
+  .pill:disabled { opacity: .4; }
+  .pill.copper { background: var(--copper); box-shadow: 0 2px 8px rgba(181,85,45,.3); }
+  .pill.silicon { background: var(--silicon); box-shadow: 0 2px 8px rgba(47,111,106,.3); }
+  .entry { display: flex; gap: 12px; padding: 12px 16px; font-size: 14px; }
+  .entry .d { flex-shrink: 0; font-size: 12px; padding-top: 2px; font-variant-numeric: tabular-nums; }
+  .entry p { margin: 0; flex: 1; white-space: pre-wrap; }
+  .entry .del { color: var(--ink-soft); font-size: 13px; align-self: flex-start; padding: 2px 6px; }
+  .empty { text-align: center; padding: 32px 0; font-size: 14px; color: var(--ink-soft); }
+
+  footer { display: flex; justify-content: center; gap: 18px; margin-top: 40px; font-size: 12px; color: var(--ink-soft); flex-wrap: wrap; }
+  footer .danger { background: var(--copper); color: #fff; padding: 4px 16px; border-radius: 999px; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="hero">
+    <div class="eyebrow">⚙️ AI 系统方向</div>
+    <h1>我的研究生三年</h1>
+    <p class="sub">系统基础 · 一生一芯 · CUDA · 论文 · 实习 · 毕业</p>
+    <div class="prog-row"><span>三年总进度</span><span class="prog-pct" id="totalPct">0%</span></div>
+    <div class="pipe" id="pipe"></div>
+    <p class="pipe-hint">轻点色块即可切换学期</p>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+  <footer>
+    <button onclick="exportData()">备份数据</button>
+    <button onclick="importData()">导入备份</button>
+    <button class="danger" onclick="resetAll()">清空全部进度</button>
+  </footer>
+</div>
+
+<script>
+// ============ 数据 ============
+const SEMESTERS = [
+  { id:"s1", short:"研一上", period:"第1学期 · 18周", theme:"打地基：系统基础", color:"var(--copper)", soft:"var(--copper-soft)", hex:"#B5552D",
+    phases:[
+      { title:"环境搭建 + 摸底", sub:"第1-2周", color:"var(--gold)", tasks:[
+        ["p1t1","配置 Linux 环境（双系统或 WSL2）"],
+        ["p1t2","安装 Git / VS Code，熟悉基本命令行"],
+        ["p1t3","注册 GitHub，建立学习仓库"],
+        ["p1t4","配置 Zotero 文献管理"],
+        ["p1t5","与导师确认方向，拿到组内必读论文清单"]]},
+      { title:"CSAPP 上半部", sub:"第3-8周", color:"var(--copper)", tasks:[
+        ["p2t1","第2章 信息的表示与处理"],
+        ["p2t2","完成 Data Lab"],
+        ["p2t3","第3章 程序的机器级表示"],
+        ["p2t4","完成 Bomb Lab"],
+        ["p2t5","完成 Attack Lab"],
+        ["p2t6","第5-6章 程序优化与存储层次"],
+        ["p2t7","每个 Lab 写一篇博客总结"]]},
+      { title:"CSAPP 下半部 + 南大PA启动", sub:"第9-14周", color:"var(--silicon)", tasks:[
+        ["p3t1","完成 Cache Lab"],
+        ["p3t2","完成 Shell Lab"],
+        ["p3t3","完成 Malloc Lab（预留两周）"],
+        ["p3t4","南大 PA1：实现简易调试器"]]},
+      { title:"期末 + 论文阅读养成", sub:"第15-18周", color:"var(--gold)", tasks:[
+        ["p4t1","完成学校课程期末考试"],
+        ["p4t2","建立每周精读 1 篇论文的节奏"],
+        ["p4t3","每周泛读 2-3 篇论文摘要"],
+        ["p4t4","每天扫一眼 arXiv（cs.AR / cs.DC / cs.LG）"]]},
+      { title:"寒假冲刺", sub:"假期", color:"var(--copper)", tasks:[
+        ["p5t1","完成南大 PA2"],
+        ["p5t2","完成南大 PA3"],
+        ["p5t3","读完论文清单「奠基篇」"]]} ]},
+  { id:"s2", short:"研一下", period:"第2学期", theme:"硬核体系结构 + 科研入门", hex:"#9A7B2D", soft:"var(--gold-soft)", color:"var(--gold)",
+    phases:[
+      { title:"一生一芯 / 体系结构深入", sub:"贯穿学期", color:"var(--copper)", tasks:[
+        ["s2t1","报名「一生一芯」计划，完成预学习阶段"],
+        ["s2t2","实现单周期 RISC-V 处理器（NPC）"],
+        ["s2t3","升级为流水级处理器，通过 B 阶段"],
+        ["s2t4","看完 ETH《Digital Design and Computer Architecture》核心章节"],
+        ["s2t5","《计算机体系结构：量化研究方法》选读第1-5章"]]},
+      { title:"科研入门", sub:"贯穿学期", color:"var(--silicon)", tasks:[
+        ["s2t6","与导师确定课题方向"],
+        ["s2t7","复现 2-3 篇有开源代码的论文"],
+        ["s2t8","每周组会主动汇报进展"],
+        ["s2t9","保持每周精读 1 篇 + 泛读 2-3 篇"]]} ]},
+  { id:"s3", short:"研一暑", period:"暑假 · 约8周", theme:"CUDA + AI系统实战", hex:"#2F6F6A", soft:"var(--silicon-soft)", color:"var(--silicon)",
+    phases:[
+      { title:"GPU 编程", sub:"第1-4周", color:"var(--copper)", tasks:[
+        ["s3t1","读完 PMPP 前 10 章"],
+        ["s3t2","手写 CUDA 算子：矩阵乘（含 tiling 优化）"],
+        ["s3t3","手写 CUDA 算子：softmax / reduction"],
+        ["s3t4","学会用 Nsight 做性能分析"]]},
+      { title:"CMU 10-714 深度学习系统", sub:"第5-8周", color:"var(--silicon)", tasks:[
+        ["s3t5","完成全部作业，从零实现 needle 框架"],
+        ["s3t6","整理 CUDA 算子库到 GitHub 仓库"],
+        ["s3t7","写 3 篇技术博客（算子优化 / 框架实现）"],
+        ["s3t8","回头精读 FlashAttention，手推 IO 复杂度"]]} ]},
+  { id:"s4", short:"研二上", period:"第3学期", theme:"论文产出 + 求职铺垫", hex:"#B5552D", soft:"var(--copper-soft)", color:"var(--copper)",
+    phases:[
+      { title:"第一篇论文", sub:"贯穿学期", color:"var(--copper)", tasks:[
+        ["s4t1","和导师敲定论文 idea 与实验方案"],
+        ["s4t2","完成核心实验与消融实验"],
+        ["s4t3","完成论文初稿并迭代 3 轮以上"],
+        ["s4t4","投稿（MLSys / ATC / PPoPP / NeurIPS 等按方向选）"]]},
+      { title:"求职铺垫", sub:"并行推进", color:"var(--gold)", tasks:[
+        ["s4t5","LeetCode 刷满 100 题（高频 + 热题100）"],
+        ["s4t6","通读 vLLM 源码，写源码解析笔记"],
+        ["s4t7","准备一页纸简历，投递日常实习"]]} ]},
+  { id:"s5", short:"研二下", period:"第4学期", theme:"实习 + 论文返修", hex:"#2F6F6A", soft:"var(--silicon-soft)", color:"var(--silicon)",
+    phases:[
+      { title:"AI Infra 日常实习", sub:"贯穿学期", color:"var(--silicon)", tasks:[
+        ["s5t1","拿到 AI Infra 方向日常实习 offer"],
+        ["s5t2","实习中独立负责一个完整模块"],
+        ["s5t3","每月复盘实习收获，更新简历"]]},
+      { title:"论文与刷题", sub:"并行推进", color:"var(--copper)", tasks:[
+        ["s5t4","处理审稿意见 / rebuttal（被拒则修改后改投）"],
+        ["s5t5","LeetCode 累计 200 题，保持每周手感"]]} ]},
+  { id:"s6", short:"研二暑", period:"暑假", theme:"黄金实习期", hex:"#9A7B2D", soft:"var(--gold-soft)", color:"var(--gold)",
+    phases:[
+      { title:"大厂暑期实习", sub:"全程", color:"var(--gold)", tasks:[
+        ["s6t1","进入大厂 AI Lab / Infra 团队暑期实习"],
+        ["s6t2","争取转正 / 留用评级"],
+        ["s6t3","8月底前完成秋招版简历与项目话术"],
+        ["s6t4","若申博：联系意向博导，准备研究计划"]]} ]},
+  { id:"s7", short:"研三上", period:"第5学期", theme:"秋招 / 申博决战", hex:"#B5552D", soft:"var(--copper-soft)", color:"var(--copper)",
+    phases:[
+      { title:"拿下出口", sub:"9-12月", color:"var(--copper)", tasks:[
+        ["s7t1","秋招投递 30+ 家公司 / 或完成申博材料"],
+        ["s7t2","每场面试后写复盘笔记"],
+        ["s7t3","拿到满意 offer 或博士录取 🎯"],
+        ["s7t4","确定毕业论文选题并开题"]]} ]},
+  { id:"s8", short:"研三下", period:"第6学期", theme:"毕业收官", hex:"#2F6F6A", soft:"var(--silicon-soft)", color:"var(--silicon)",
+    phases:[
+      { title:"毕业论文", sub:"全程", color:"var(--silicon)", tasks:[
+        ["s8t1","完成毕业论文初稿"],
+        ["s8t2","通过盲审"],
+        ["s8t3","通过答辩，顺利毕业 🎓"]]} ]},
+];
+
+const COURSE_GROUPS = [
+  { name:"课程 · 按学习顺序", color:"var(--gold)", items:[
+    ["k1a","CMU 15-213《CSAPP》课程","研一上 · 配书+全部Lab，计算机内功"],
+    ["k1b","南京大学《计算机系统基础》PA实验","研一上至寒假 · 手写模拟器，中文高质量"],
+    ["k1c","ETH《Digital Design and Computer Architecture》","研一下 · Onur Mutlu，B站有搬运"],
+    ["k1d","「一生一芯」计划","研一下 · 从零设计RISC-V处理器并流片"],
+    ["k1e","CMU 10-714《Deep Learning Systems》","研一暑假 · 从零写深度学习框架"],
+    ["k1f","MIT 6.5940《TinyML》（韩松）","研二选学 · 模型压缩与高效推理"],
+    ["k1g","MIT 18.06 线性代数（Gilbert Strang）","穿插补强 · 数学地基"]]},
+  { name:"书籍 · 案头常备", color:"var(--gold)", items:[
+    ["k2a","《深入理解计算机系统》(CSAPP)","研一上精读 · 重点2/3/5/6章"],
+    ["k2b","《计算机组成与设计：硬件/软件接口》RISC-V版","研一 · Patterson & Hennessy"],
+    ["k2c","《计算机体系结构：量化研究方法》","研一下选读1-5章 · 体系结构圣经"],
+    ["k2d","《Programming Massively Parallel Processors》","研一暑假 · CUDA必读，前10章"],
+    ["k2e","《动手学深度学习》（李沐）","穿插 · 边学边写代码补AI基础"]]},
+];
+
+const PAPER_GROUPS = [
+  { name:"奠基篇 · 先读这些", items:[
+    ["a1","Attention Is All You Need","Transformer，一切的起点"],
+    ["a2","In-Datacenter Performance Analysis of a TPU","Google TPU，AI芯片开山之作"],
+    ["a3","Roofline Model","算力与带宽瓶颈的分析框架"]]},
+  { name:"训练系统", items:[
+    ["b1","Megatron-LM","张量并行"],
+    ["b2","ZeRO","DeepSpeed 的显存优化"],
+    ["b3","GPipe / PipeDream","流水级并行"]]},
+  { name:"推理优化 · 当前最热", items:[
+    ["c1","FlashAttention 1 & 2","必读，手推一遍 IO 复杂度"],
+    ["c2","vLLM: PagedAttention","推理服务的事实标准"],
+    ["c3","Speculative Decoding","投机采样"]]},
+  { name:"模型压缩", items:[
+    ["d1","GPTQ / AWQ","量化两大主流方法"],
+    ["d2","Deep Compression（韩松）","剪枝 + 量化经典"]]},
+  { name:"编译与算子", items:[
+    ["e1","TVM","深度学习编译器"],
+    ["e2","Triton","OpenAI 的 GPU 编程语言"]]},
+  { name:"进阶选读 · 研二再看", items:[
+    ["f1","Orca: Continuous Batching","LLM 服务调度"],
+    ["f2","Switch Transformer / MoE","稀疏专家模型"],
+    ["f3","Ring Attention","长上下文的分布式注意力"]]},
+];
+
+const HABITS = [
+  ["h1","固定时间睡觉（23:30前），睡足7-8小时","记忆巩固主要发生在睡眠中，熬夜等于白学"],
+  ["h2","起床后晒10分钟太阳","校准生物钟，晚上更容易入睡"],
+  ["h3","完成2个90分钟深度工作块","手机放远处，顺应大脑的专注节律"],
+  ["h4","运动30分钟","快走/跑步/力量都行，直接提升记忆力和情绪"],
+  ["h5","三餐规律，蛋白质和蔬菜优先","少奶茶、少油糖外卖"],
+  ["h6","喝够1.5-2L水，下午2点后不碰咖啡因","咖啡因半衰期约6小时，会侵蚀深睡眠"],
+  ["h7","睡前5分钟主动回忆今天所学","合上书自测，是最高效的记忆方法"],
+  ["h8","睡前1小时远离屏幕","蓝光和信息流都会推迟入睡"],
+];
+
+const STUDY_TIPS = [
+  ["间隔重复","用Anki复习论文要点和面试八股，按1/3/7/15天间隔，对抗遗忘曲线"],
+  ["主动回忆","合上书自己复述，比反复重读有效数倍；做题永远优于看题解"],
+  ["费曼技巧","讲不明白就是没学会——写博客、给同学讲题都是费曼练习"],
+  ["交错练习","刷题时混合不同题型，比同一类型连刷记得更牢"],
+  ["先难后易","把最难的任务放进上午第一个深度块，意志力是消耗品"],
+];
+
+const SCHEDULE = [
+  ["07:30","起床 · 晒太阳 · 含蛋白质的早餐"],
+  ["08:30","深度块1（90分钟）：今天最难的事——课程Lab或论文实验"],
+  ["10:15","深度块2（90分钟）：次难任务"],
+  ["12:00","午饭 · 小睡20分钟（别超过30分钟）"],
+  ["14:00","实验室时间：跑实验、组会、协作和杂事"],
+  ["18:00","晚饭 · 运动30分钟"],
+  ["19:30","弹性学习：刷题、读论文、写博客"],
+  ["22:30","主动回忆5分钟 · 写当天日志"],
+  ["23:30","入睡，雷打不动"],
+];
+
+const DIET = [
+  "早餐必吃且含蛋白质（蛋、奶、豆制品），稳住上午的血糖和专注力",
+  "多吃原型食物：蔬菜、全谷物、鱼禽蛋豆；奶茶和含糖饮料每周限1次",
+  "点外卖优先轻食少油少糖；食堂通常比外卖更均衡",
+  "困了优先补觉而不是灌咖啡，长期睡眠债没有任何饮品能还",
+];
+
+const LIFE_DAILY = [
+  ["ld3","起床后整理床铺、开窗通风","30秒的事，宿舍空气和心情都不一样"],
+  ["ld4","早晚刷牙各一次，每次2分钟","顺手用牙线，看牙医很贵"],
+  ["ld5","洗脸（早晚）","冬天北京干燥，洗完记得保湿"],
+  ["ld6","出门带水杯","白天的饮水量全靠它保证"],
+  ["ld1","洗澡","放在运动后或睡前1.5小时，洗完体温回落更容易入睡"],
+  ["ld7","睡前把明早要带的东西放门口","电脑、充电器、饭卡，早上不用找"],
+  ["ld2","睡前整理桌面5分钟","第二天坐下就能直接进入深度块"],
+];
+const LIFE_WEEKLY = [
+  ["lw1","洗衣服（建议周三晚 + 周日上午各一次）","等洗衣机的时间正好听论文讲解或播客"],
+  ["lw2","打扫宿舍 / 工位","周日上午顺手做，环境整洁降低学习摩擦"],
+  ["lw3","换床单、枕巾、毛巾","每1-2周一次"],
+  ["lw4","采购下周日用品和水果","一次买齐，省得零碎跑"],
+  ["lw5","给家里打个电话","周末固定时间，报个平安"],
+];
+const LIFE_MONTHLY = [
+  ["lm1","晒被子 / 洗被套","挑个晴天"],
+  ["lm2","理发","组会、面试都体面"],
+  ["lm3","备份电脑数据和实验代码","实验数据丢了哭都来不及"],
+  ["lm4","换牙刷（每3个月）· 检查日用品库存",""],
+  ["lm5","算一笔本月开销账","兼职和补助的收支心里有数"],
+];
+
+const WEEKLY = [
+  ["w1","清空本周的 Anki 复习队列"],
+  ["w2","重做本周标记的 LeetCode 错题"],
+  ["w3","对照计划勾掉本周完成项，看一眼进度条"],
+  ["w4","翻一遍本周日志，找出最大卡点"],
+  ["w5","写下下周最重要的三件事（用下面的输入框）"],
+];
+
+const ALL_TASK_IDS = SEMESTERS.flatMap(s=>s.phases.flatMap(p=>p.tasks.map(t=>t[0])));
+const ALL_COURSE_IDS = COURSE_GROUPS.flatMap(g=>g.items.map(i=>i[0]));
+const ALL_PAPER_IDS = PAPER_GROUPS.flatMap(g=>g.items.map(i=>i[0]));
+
+// ============ 状态 ============
+const KEY = "gradplan-v1";
+let S = { tasks:{}, papers:{}, courses:{}, leet:{count:0, notes:[]}, logs:[], habits:{}, weekly:{}, life:{d:{},w:{},m:{}}, activeSem:"s1", tab:"plan" };
+try {
+  const raw = localStorage.getItem(KEY);
+  if (raw) { const d = JSON.parse(raw); S = Object.assign(S, d); if(!S.leet) S.leet={count:0,notes:[]}; if(!S.habits) S.habits={}; if(!S.weekly) S.weekly={}; if(!S.life) S.life={d:{},w:{},m:{}}; }
+} catch(e) {}
+
+let saveTimer = null;
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); flashSave("已保存 ✓"); }
+    catch(e) { flashSave("保存失败"); }
+  }, 300);
+}
+function flashSave(msg) {
+  const el = document.getElementById("saveMsg");
+  if (el) { el.textContent = msg; setTimeout(()=>{ if(el.textContent===msg) el.textContent=""; }, 1500); }
+}
+
+// ============ 工具 ============
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function today() {
+  const n = new Date();
+  return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");
+}
+function semProgress(sem) {
+  const ids = sem.phases.flatMap(p=>p.tasks.map(t=>t[0]));
+  return ids.length ? ids.filter(id=>S.tasks[id]).length / ids.length : 0;
+}
+function habitStreak() {
+  let streak = 0;
+  const d = new Date();
+  for (let i = 0; i < 730; i++) {
+    const key = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    if ((S.habits[key]||[]).length >= 5) { streak++; }
+    else if (i === 0) { /* 今天尚未达标不打断连击 */ }
+    else break;
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+function weekKey() {
+  const d = new Date();
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  const week = Math.ceil((((d - jan1) / 86400000) + jan1.getDay() + 1) / 7);
+  return d.getFullYear() + "-W" + week;
+}
+function monthKey() {
+  const n = new Date();
+  return n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0");
+}
+
+// ============ 渲染 ============
+function renderHeader() {
+  const doneT = ALL_TASK_IDS.filter(id=>S.tasks[id]).length;
+  const doneC = ALL_COURSE_IDS.filter(id=>S.courses[id]).length;
+  const doneP = ALL_PAPER_IDS.filter(id=>S.papers[id]).length;
+  const total = ALL_TASK_IDS.length + ALL_COURSE_IDS.length + ALL_PAPER_IDS.length;
+  const pct = Math.round((doneT+doneC+doneP)/total*100);
+  document.getElementById("totalPct").textContent = pct + "%";
+
+  document.getElementById("pipe").innerHTML = SEMESTERS.map(s => {
+    const fill = Math.round(semProgress(s)*100);
+    return `<button class="${s.id===S.activeSem?"active":""}" onclick="goSem('${s.id}')" aria-label="${s.short}">
+      <span class="fill" style="height:${fill}%;background:${s.hex}"></span>
+      <span class="lbl" style="${fill>55?'color:#fff':''}">${s.short}</span>
+    </button>`;
+  }).join("");
+
+  document.getElementById("stats").innerHTML =
+    `<span>任务 <b>${doneT}/${ALL_TASK_IDS.length}</b></span>` +
+    `<span>课程书 <b>${doneC}/${ALL_COURSE_IDS.length}</b></span>` +
+    `<span>论文 <b>${doneP}/${ALL_PAPER_IDS.length}</b></span>` +
+    `<span>刷题 <b>${S.leet.count}</b></span>` +
+    `<span>日志 <b>${S.logs.length}</b></span>` +
+    `<span class="save" id="saveMsg"></span>`;
+}
+
+function renderNav() {
+  const tabs = [["plan","计划"],["courses","课程书"],["papers","论文"],["leet","刷题"],["habits","习惯"],["life","生活"],["log","日志"]];
+  document.getElementById("nav").innerHTML = tabs.map(([id,lbl]) =>
+    `<button class="${S.tab===id?"active":""}" onclick="goTab('${id}')">${lbl}</button>`).join("");
+}
+
+function checkRow(checked, color, title, note, onclick) {
+  return `<li><button class="item ${checked?"done":""}" onclick="${onclick}">
+    <span class="ck" style="${checked?`background:${color}`:""}">${checked?"✓":""}</span>
+    <span><span class="t">${esc(title)}</span>${note?`<span class="n">${esc(note)}</span>`:""}</span>
+  </button></li>`;
+}
+
+function renderMain() {
+  const m = document.getElementById("main");
+  if (S.tab === "plan") {
+    const sem = SEMESTERS.find(s=>s.id===S.activeSem) || SEMESTERS[0];
+    let html = `<div class="sem-bar" style="background:${sem.soft}">
+      <span class="name" style="color:${sem.hex}">${sem.short}</span>
+      <span class="theme">${sem.theme}</span>
+      <span class="meta">${sem.period} · ${Math.round(semProgress(sem)*100)}%</span></div>`;
+    html += sem.phases.map(ph => {
+      const done = ph.tasks.filter(t=>S.tasks[t[0]]).length;
+      return `<section class="card">
+        <div class="card-head"><span class="dot" style="background:${ph.color}"></span>
+          <h2>${ph.title}</h2><span class="meta">${ph.sub} · ${done}/${ph.tasks.length}</span></div>
+        <ul>${ph.tasks.map(([id,txt]) => checkRow(!!S.tasks[id], ph.color, txt, "", `toggle('tasks','${id}')`)).join("")}</ul>
+      </section>`;
+    }).join("");
+    html += `<div class="hint-row">⚑ 在顶部进度条上轻点可切换学期</div>`;
+    m.innerHTML = html;
+  } else if (S.tab === "courses") {
+    m.innerHTML = `<p class="tip">每门课的标准动作：看视频 → 做全部Lab → 写博客总结。不做Lab等于没学。</p>` +
+      COURSE_GROUPS.map(g => `<section class="card">
+        <div class="group-head" style="color:${g.color}">${g.name}</div>
+        <ul>${g.items.map(([id,t,n]) => checkRow(!!S.courses[id], "var(--gold)", t, n, `toggle('courses','${id}')`)).join("")}</ul>
+      </section>`).join("");
+  } else if (S.tab === "papers") {
+    m.innerHTML = `<p class="tip">读法：奠基篇精读到能讲给别人听；进阶选读留到研二实习前。学完 CUDA 后回头精读 FlashAttention 与 Triton。</p>` +
+      PAPER_GROUPS.map(g => `<section class="card">
+        <div class="group-head" style="color:var(--silicon)">${g.name}</div>
+        <ul>${g.items.map(([id,t,n]) => checkRow(!!S.papers[id], "var(--silicon)", t, n, `toggle('papers','${id}')`)).join("")}</ul>
+      </section>`).join("");
+  } else if (S.tab === "leet") {
+    const c = S.leet.count;
+    m.innerHTML = `<section class="card"><div class="counter">
+        <div class="counter-label">已刷题数</div>
+        <div class="counter-row">
+          <button class="round minus" onclick="bump(-1)" aria-label="减一题">−</button>
+          <div><div class="big">${c}</div><div class="unit">题</div></div>
+          <button class="round plus" onclick="bump(1)" aria-label="加一题">＋</button>
+        </div>
+        <div class="bar"><div class="f" style="width:${Math.min(100,c/200*100)}%"></div><div class="mid"></div></div>
+        <div class="marks"><span>0</span>
+          <span class="${c>=100?"hit":""}">100 · 研二上达标${c>=100?" ✓":""}</span>
+          <span class="${c>=200?"hit":""}">200 · 研二下达标${c>=200?" ✓":""}</span></div>
+      </div></section>
+      <section class="card"><div class="input-card">
+        <div class="counter-label" style="margin-bottom:8px">刷题感悟</div>
+        <textarea id="leetDraft" rows="3" placeholder="例：滑动窗口终于开窍了——右指针扩张、左指针收缩，本质是维护一个合法区间。同类题：3 / 76 / 209…"></textarea>
+        <div class="input-foot"><button class="pill silicon" onclick="addLeetNote()">记录感悟</button></div>
+      </div></section>
+      <section class="card"><ul>
+        ${S.leet.notes.length ? S.leet.notes.map(n =>
+          `<li><div class="entry">
+            <span class="d" style="color:var(--silicon)">${n.date}<br><span style="color:var(--ink-soft)">@${n.n}题</span></span>
+            <p>${esc(n.text)}</p>
+            <button class="del" onclick="delLeetNote(${n.id})" aria-label="删除">✕</button>
+          </div></li>`).join("")
+        : `<li class="empty">每攻克一类题型，就在这里留一句心得</li>`}
+      </ul></section>`;
+  } else if (S.tab === "habits") {
+    const k = today();
+    const doneArr = S.habits[k] || [];
+    const streak = habitStreak();
+    m.innerHTML = `<section class="card"><div class="counter">
+        <div class="counter-label">习惯连击</div>
+        <div class="counter-row"><div>
+          <div class="big" style="color:var(--silicon)">${streak}</div>
+          <div class="unit">天 · 今日 ${doneArr.length}/${HABITS.length} 项（每天完成≥5项算达标）</div>
+        </div></div>
+      </div></section>
+      <section class="card">
+        <div class="group-head" style="color:var(--silicon)">今日习惯打卡 · 每天自动刷新</div>
+        <ul>${HABITS.map(([id,t,n]) => checkRow(doneArr.includes(id), "var(--silicon)", t, n, `toggleHabit('${id}')`)).join("")}</ul>
+      </section>
+      <section class="card">
+        <div class="group-head" style="color:var(--copper)">学习心法 · 认知科学验证有效</div>
+        <ul>${STUDY_TIPS.map(([t,n]) =>
+          `<li><div class="entry"><p><b>${t}</b><span class="n">${n}</span></p></div></li>`).join("")}</ul>
+      </section>
+      <section class="card">
+        <div class="group-head" style="color:var(--gold)">一日作息模板 · 围绕两个深度工作块</div>
+        <ul>${SCHEDULE.map(([t,n]) =>
+          `<li><div class="entry"><span class="d" style="color:var(--gold)">${t}</span><p>${n}</p></div></li>`).join("")}</ul>
+      </section>
+      <section class="card">
+        <div class="group-head" style="color:var(--copper)">饮食原则 · 简单可执行</div>
+        <ul>${DIET.map(t => `<li><div class="entry"><p>${t}</p></div></li>`).join("")}</ul>
+      </section>`;
+  } else if (S.tab === "life") {
+    const dk = today(), wk2 = weekKey(), mk = monthKey();
+    const dArr = S.life.d[dk] || [], wArr = S.life.w[wk2] || [], mArr = S.life.m[mk] || [];
+    m.innerHTML = `<p class="tip">生活事务用固定节奏处理，不占用脑容量——决定"什么时候洗衣服"这种小事重复一百次也很累，定死了就不用再想。</p>
+      <section class="card">
+        <div class="group-head" style="color:var(--silicon)">每天 · ${dArr.length}/${LIFE_DAILY.length}</div>
+        <ul>${LIFE_DAILY.map(([id,t,n]) => checkRow(dArr.includes(id), "var(--silicon)", t, n, `toggleLife('d','${id}')`)).join("")}</ul>
+      </section>
+      <section class="card">
+        <div class="group-head" style="color:var(--copper)">每周 · ${wArr.length}/${LIFE_WEEKLY.length}（每周一刷新）</div>
+        <ul>${LIFE_WEEKLY.map(([id,t,n]) => checkRow(wArr.includes(id), "var(--copper)", t, n, `toggleLife('w','${id}')`)).join("")}</ul>
+      </section>
+      <section class="card">
+        <div class="group-head" style="color:var(--gold)">每月 · ${mArr.length}/${LIFE_MONTHLY.length}（每月1号刷新）</div>
+        <ul>${LIFE_MONTHLY.map(([id,t,n]) => checkRow(mArr.includes(id), "var(--gold)", t, n, `toggleLife('m','${id}')`)).join("")}</ul>
+      </section>`;
+  } else if (S.tab === "log") {
+    const wk = weekKey();
+    const wDone = S.weekly[wk] || [];
+    m.innerHTML = `<section class="card">
+        <div class="group-head" style="color:var(--gold)">本周复盘 · 建议周六上午 · ${wDone.length}/${WEEKLY.length}（每周一自动刷新）</div>
+        <ul>${WEEKLY.map(([id,t]) => checkRow(wDone.includes(id), "var(--gold)", t, "", `toggleWeekly('${id}')`)).join("")}</ul>
+        <div class="input-card">
+          <textarea id="weekDraft" rows="2" placeholder="下周最重要的三件事：1… 2… 3…"></textarea>
+          <div class="input-foot"><button class="pill copper" onclick="saveWeekPlan()">存为复盘记录</button></div>
+        </div>
+      </section>
+      <p class="tip">每天睡前记一条：今天做了什么、卡在哪、明天第一件事。</p>
+      <section class="card"><div class="input-card">
+        <textarea id="logDraft" rows="3" placeholder="例：做完 bomb lab phase 3，phase 4 的跳转表还没看懂，明天先画出 switch 的汇编结构…"></textarea>
+        <div class="input-foot"><button class="pill copper" onclick="addLog()">记录今天</button></div>
+      </div></section>
+      <section class="card"><ul>
+        ${S.logs.length ? S.logs.map(l =>
+          `<li><div class="entry">
+            <span class="d" style="color:var(--copper)">${l.date}</span>
+            <p>${esc(l.text)}</p>
+            <button class="del" onclick="delLog(${l.id})" aria-label="删除">✕</button>
+          </div></li>`).join("")
+        : `<li class="empty">还没有日志，今天写下第一条吧</li>`}
+      </ul></section>`;
+  }
+}
+
+function renderAll(){ renderHeader(); renderNav(); renderMain(); }
+
+// ============ 操作 ============
+function toggle(kind, id){ S[kind][id] = !S[kind][id]; save(); renderAll(); }
+function goSem(id){ S.activeSem = id; S.tab = "plan"; save(); renderAll(); }
+function goTab(id){ S.tab = id; save(); renderAll(); }
+function bump(d){ S.leet.count = Math.max(0, S.leet.count + d); save(); renderAll(); }
+function toggleHabit(id){
+  const k = today();
+  const arr = S.habits[k] || [];
+  S.habits[k] = arr.includes(id) ? arr.filter(x=>x!==id) : arr.concat(id);
+  save(); renderAll();
+}
+function toggleLife(scope, id){
+  const k = scope === "d" ? today() : scope === "w" ? weekKey() : monthKey();
+  const arr = S.life[scope][k] || [];
+  S.life[scope][k] = arr.includes(id) ? arr.filter(x=>x!==id) : arr.concat(id);
+  save(); renderAll();
+}
+function toggleWeekly(id){
+  const k = weekKey();
+  const arr = S.weekly[k] || [];
+  S.weekly[k] = arr.includes(id) ? arr.filter(x=>x!==id) : arr.concat(id);
+  save(); renderAll();
+}
+function saveWeekPlan(){
+  const el = document.getElementById("weekDraft"); const t = el.value.trim(); if(!t) return;
+  S.logs.unshift({id:Date.now(), date:today(), text:"【周复盘】下周最重要的三件事：\n"+t});
+  const k = weekKey();
+  const arr = S.weekly[k] || [];
+  if(!arr.includes("w5")) S.weekly[k] = arr.concat("w5");
+  save(); renderAll();
+}
+function addLog(){
+  const el = document.getElementById("logDraft"); const t = el.value.trim(); if(!t) return;
+  S.logs.unshift({id:Date.now(), date:today(), text:t}); save(); renderAll();
+}
+function delLog(id){ S.logs = S.logs.filter(x=>x.id!==id); save(); renderAll(); }
+function addLeetNote(){
+  const el = document.getElementById("leetDraft"); const t = el.value.trim(); if(!t) return;
+  S.leet.notes.unshift({id:Date.now(), date:today(), n:S.leet.count, text:t}); save(); renderAll();
+}
+function delLeetNote(id){ S.leet.notes = S.leet.notes.filter(x=>x.id!==id); save(); renderAll(); }
+function resetAll(){
+  if(!confirm("确定清空所有进度和日志吗？此操作无法撤销。")) return;
+  S = { tasks:{}, papers:{}, courses:{}, leet:{count:0,notes:[]}, logs:[], habits:{}, weekly:{}, life:{d:{},w:{},m:{}}, activeSem:"s1", tab:"plan" };
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  renderAll();
+}
+function exportData(){
+  const json = JSON.stringify(S);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(json).then(()=>alert("备份已复制到剪贴板，可粘贴到备忘录保存。"))
+      .catch(()=>prompt("复制下面的备份内容：", json));
+  } else { prompt("复制下面的备份内容：", json); }
+}
+function importData(){
+  const raw = prompt("粘贴之前的备份内容：");
+  if(!raw) return;
+  try { const d = JSON.parse(raw); S = Object.assign({tasks:{},papers:{},courses:{},leet:{count:0,notes:[]},logs:[],habits:{},weekly:{},life:{d:{},w:{},m:{}},activeSem:"s1",tab:"plan"}, d); if(!d.life) S.life={d:{},w:{},m:{}}; save(); renderAll(); alert("导入成功！"); }
+  catch(e){ alert("导入失败：内容格式不对。"); }
+}
+
+// 离线缓存（仅在 https 托管时生效，本地打开自动跳过）
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+
+renderAll();
+</script>
+</body>
+</html>

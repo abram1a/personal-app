@@ -1,0 +1,9 @@
+{
+  "name": "我的研究生三年",
+  "short_name": "研三年",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FAFBF8",
+  "theme_color": "#14231D",
+  "icons": []
+}
