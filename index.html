@@ -138,7 +138,7 @@
   .marks .hit { color: var(--copper); }
 
   .input-card { padding: 12px; }
-  textarea, input[type=text] {
+  textarea, input[type=text], input[type=number] {
     width: 100%; resize: none; border: 1px solid var(--grid); border-radius: 8px;
     background: var(--bg); color: var(--ink); padding: 10px; font: inherit; font-size: 14px;
   }
@@ -387,6 +387,14 @@ const WEEKLY = [
 
 const ANKI_LADDER = [1, 3, 7, 15, 30, 60, 120];
 
+const DEFAULT_SHOP = [
+  { id:"r1", name:"一杯奶茶 / 咖啡", cost:300 },
+  { id:"mend", name:"补签卡（修复最近断掉的一天）", cost:400 },
+  { id:"r2", name:"一顿火锅 / 大餐", cost:800 },
+  { id:"r4", name:"彻底躺平的一天（无愧疚）", cost:1000 },
+  { id:"r3", name:"一件想买的小装备", cost:1500 },
+];
+
 const ALL_TASK_IDS = SEMESTERS.flatMap(s=>s.phases.flatMap(p=>p.tasks.map(t=>t[0])));
 const ALL_COURSE_IDS = COURSE_GROUPS.flatMap(g=>g.items.map(i=>i[0]));
 const ALL_PAPER_IDS = PAPER_GROUPS.flatMap(g=>g.items.map(i=>i[0]));
@@ -395,6 +403,7 @@ const ALL_PAPER_IDS = PAPER_GROUPS.flatMap(g=>g.items.map(i=>i[0]));
 const KEY = "gradplan-v1";
 let S = { tasks:{}, papers:{}, courses:{}, leet:{count:0, notes:[]}, logs:[],
           habits:{}, weekly:{}, life:{d:{},w:{},m:{}}, anki:{cards:[]},
+          pts:0, bonus:{}, shop:{ items:DEFAULT_SHOP.map(x=>({...x})), redeemed:[] },
           activeSem:"s1", tab:"today" };
 try {
   const raw = localStorage.getItem(KEY);
@@ -405,7 +414,10 @@ try {
     if(!S.weekly) S.weekly={};
     if(!S.life) S.life={d:{},w:{},m:{}};
     if(!S.anki) S.anki={cards:[]};
-    if(!["today","menu","plan","courses","papers","leet","method","chores","log","ankiManage"].includes(S.tab)) S.tab="today";
+    if(typeof S.pts !== "number") S.pts = 0;
+    if(!S.bonus) S.bonus = {};
+    if(!S.shop) S.shop = { items:DEFAULT_SHOP.map(x=>({...x})), redeemed:[] };
+    if(!["today","menu","plan","courses","papers","leet","method","chores","log","ankiManage","shop"].includes(S.tab)) S.tab="today";
   }
 } catch(e) {}
 
@@ -453,6 +465,7 @@ function totalPct(){
   const doneP = ALL_PAPER_IDS.filter(id=>S.papers[id]).length;
   return Math.round((doneT+doneC+doneP)/(ALL_TASK_IDS.length+ALL_COURSE_IDS.length+ALL_PAPER_IDS.length)*100);
 }
+function addPts(n){ S.pts = Math.max(0, S.pts + n); }
 
 // ============ 渲染 ============
 const WEEKDAYS = ["周日","周一","周二","周三","周四","周五","周六"];
@@ -464,6 +477,8 @@ function renderHeader(){
   const doneToday = (S.habits[today()]||[]).length;
   document.getElementById("heroTitle").textContent = S.tab === "today" ? "今天" : "我的研究生三年";
   document.getElementById("chips").innerHTML =
+    `<span class="chip">⭐ <b>${S.pts}</b> 分</span>` +
+    `<span class="chip">积分 <b>${S.pts}</b></span>` +
     `<span class="chip">今日 <b>${doneToday}/${TODAY_MUST.length}</b></span>` +
     `<span class="chip">连击 <b>${habitStreak()}</b> 天</span>` +
     `<span class="chip">待复习 <b>${dueCards().length}</b> 张</span>` +
@@ -539,6 +554,7 @@ function renderMain(){
 
   } else if (S.tab === "menu") {
     const items = [
+      ["shop","🎁","奖励商店", S.pts+" 分可用"],
       ["plan","🗺️","三年计划", totalPct()+"% 完成"],
       ["courses","🎓","课程与书", ALL_COURSE_IDS.filter(id=>S.courses[id]).length+"/"+ALL_COURSE_IDS.length],
       ["papers","📄","论文清单", ALL_PAPER_IDS.filter(id=>S.papers[id]).length+"/"+ALL_PAPER_IDS.length],
@@ -638,6 +654,33 @@ function renderMain(){
         : `<li class="empty">读论文、做Lab时随手把要点做成卡片</li>`}</ul>
       </section>`;
 
+  } else if (S.tab === "shop") {
+    m.innerHTML = backBtn() + `<section class="card"><div class="counter">
+        <div class="counter-label">我的积分</div>
+        <div class="big" style="color:var(--gold);margin-top:8px">${S.pts}</div>
+        <div class="unit">必做+10 · 深度块+30 · 达标日+50 · 清空Anki+20 · 计划任务+25 · 课程书+80 · 论文+40 · 每题+5 · 周复盘+100</div>
+      </div></section>
+      <section class="card">
+        <div class="group-head" style="color:var(--gold)">可兑换 · 用虚拟分数锚定真实快乐</div>
+        <ul>${S.shop.items.map(it => `<li><div class="entry">
+          <p><b>${esc(it.name)}</b><span class="n">${it.cost} 分</span></p>
+          ${String(it.id).startsWith("u") ? `<button class="del" onclick="delShopItem('${it.id}')">✕</button>` : ""}
+          <button class="pill ${S.pts>=it.cost?"copper":"ghost"}" ${S.pts<it.cost?"disabled":""} onclick="redeem('${it.id}')" style="align-self:center;padding:6px 14px;font-size:13px">兑换</button>
+        </div></li>`).join("")}</ul>
+        <div class="input-card">
+          <input type="text" id="shopName" placeholder="自定义奖励（例：买那个机械键盘）" style="margin-top:0" />
+          <input type="text" id="shopCost" placeholder="所需积分（例：2000）" inputmode="numeric" />
+          <div class="input-foot"><button class="pill silicon" onclick="addShopItem()">添加奖励</button></div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="group-head" style="color:var(--silicon)">兑换记录</div>
+        <ul>${S.shop.redeemed.length ? S.shop.redeemed.map(r =>
+          `<li><div class="entry"><span class="d" style="color:var(--silicon)">${r.date}</span>
+            <p>${esc(r.name)}<span class="n">−${r.cost} 分</span></p></div></li>`).join("")
+        : `<li class="empty">攒够积分，理直气壮地犒劳自己</li>`}</ul>
+      </section>`;
+
   } else if (S.tab === "chores") {
     const wk2 = weekKey(), mk = monthKey();
     const wArr = S.life.w[wk2] || [], mArr = S.life.m[mk] || [];
@@ -696,28 +739,47 @@ function renderMain(){
 function renderAll(){ renderHeader(); renderNav(); renderMain(); }
 
 // ============ 操作 ============
-function toggle(kind, id){ S[kind][id] = !S[kind][id]; save(); renderAll(); }
+const PTS_MAP = { tasks: 25, courses: 80, papers: 40 };
+function toggle(kind, id){
+  S[kind][id] = !S[kind][id];
+  addPts((PTS_MAP[kind] || 0) * (S[kind][id] ? 1 : -1));
+  save(); renderAll();
+}
 function goSem(id){ S.activeSem = id; save(); renderAll(); }
 function goTab(id){ S.tab = id; R = null; save(); renderAll(); window.scrollTo(0,0); }
 function toggleHabit(id){
   const k = today();
   const arr = S.habits[k] || [];
-  S.habits[k] = arr.includes(id) ? arr.filter(x=>x!==id) : arr.concat(id);
+  const checking = !arr.includes(id);
+  S.habits[k] = checking ? arr.concat(id) : arr.filter(x=>x!==id);
+  addPts((id === "t1" ? 30 : 10) * (checking ? 1 : -1));
+  if (checking && S.habits[k].length >= STREAK_NEED && !S.bonus["day-"+k]) {
+    S.bonus["day-"+k] = true; addPts(50);
+  }
   save(); renderAll();
 }
 function toggleLife(scope, id){
   const k = scope === "w" ? weekKey() : monthKey();
   const arr = S.life[scope][k] || [];
-  S.life[scope][k] = arr.includes(id) ? arr.filter(x=>x!==id) : arr.concat(id);
+  const checking = !arr.includes(id);
+  S.life[scope][k] = checking ? arr.concat(id) : arr.filter(x=>x!==id);
+  addPts(10 * (checking ? 1 : -1));
   save(); renderAll();
 }
 function toggleWeekly(id){
   const k = weekKey();
   const arr = S.weekly[k] || [];
-  S.weekly[k] = arr.includes(id) ? arr.filter(x=>x!==id) : arr.concat(id);
+  const checking = !arr.includes(id);
+  S.weekly[k] = checking ? arr.concat(id) : arr.filter(x=>x!==id);
+  addPts(10 * (checking ? 1 : -1));
   save(); renderAll();
 }
-function bump(d){ S.leet.count = Math.max(0, S.leet.count + d); save(); renderAll(); }
+function bump(d){
+  const before = S.leet.count;
+  S.leet.count = Math.max(0, S.leet.count + d);
+  addPts((S.leet.count - before) * 5);
+  save(); renderAll();
+}
 
 // --- Anki ---
 function startReview(){
@@ -735,13 +797,21 @@ function grade(ok){
       card.step = 0;
       card.due = addDays(1);
     }
+    addPts(2);
   }
   R.i++; R.back = false;
-  // 全部记得后自动勾掉"清空Anki队列"
+  // 队列清空：自动勾掉"清空Anki队列" + 一次性奖励
   if (R.i >= R.queue.length && dueCards().length === 0) {
     const k = today();
     const arr = S.habits[k] || [];
-    if (!arr.includes("t2")) S.habits[k] = arr.concat("t2");
+    if (!arr.includes("t2")) {
+      S.habits[k] = arr.concat("t2");
+      addPts(10);
+      if (S.habits[k].length >= STREAK_NEED && !S.bonus["day-"+k]) {
+        S.bonus["day-"+k] = true; addPts(50);
+      }
+    }
+    if (!S.bonus["anki-"+k]) { S.bonus["anki-"+k] = true; addPts(20); }
   }
   save(); renderAll();
 }
@@ -757,28 +827,62 @@ function delCard(id){ S.anki.cards = S.anki.cards.filter(c=>c.id!==id); save(); 
 // --- 日志 ---
 function addLog(){
   const el = document.getElementById("logDraft"); const t = el.value.trim(); if(!t) return;
-  S.logs.unshift({id:Date.now(), date:today(), text:t}); save(); renderAll();
+  S.logs.unshift({id:Date.now(), date:today(), text:t}); addPts(5); save(); renderAll();
 }
-function delLog(id){ S.logs = S.logs.filter(x=>x.id!==id); save(); renderAll(); }
+function delLog(id){ S.logs = S.logs.filter(x=>x.id!==id); addPts(-5); save(); renderAll(); }
 function addLeetNote(){
   const el = document.getElementById("leetDraft"); const t = el.value.trim(); if(!t) return;
-  S.leet.notes.unshift({id:Date.now(), date:today(), n:S.leet.count, text:t}); save(); renderAll();
+  S.leet.notes.unshift({id:Date.now(), date:today(), n:S.leet.count, text:t}); addPts(5); save(); renderAll();
 }
-function delLeetNote(id){ S.leet.notes = S.leet.notes.filter(x=>x.id!==id); save(); renderAll(); }
+function delLeetNote(id){ S.leet.notes = S.leet.notes.filter(x=>x.id!==id); addPts(-5); save(); renderAll(); }
 function saveWeekPlan(){
   const el = document.getElementById("weekDraft"); const t = el.value.trim(); if(!t) return;
   S.logs.unshift({id:Date.now(), date:today(), text:"【周复盘】下周最重要的三件事：\n"+t});
   const k = weekKey();
   const arr = S.weekly[k] || [];
-  if(!arr.includes("w5")) S.weekly[k] = arr.concat("w5");
+  if(!arr.includes("w5")) { S.weekly[k] = arr.concat("w5"); addPts(10); }
+  if(!S.bonus["week-"+k]) { S.bonus["week-"+k] = true; addPts(100); }
   save(); renderAll();
 }
+
+// --- 奖励商店 ---
+function redeem(id){
+  const it = S.shop.items.find(x => String(x.id) === String(id));
+  if (!it || S.pts < it.cost) return;
+  if (id === "mend") {
+    const d = new Date(); d.setDate(d.getDate()-1);
+    let target = null;
+    for (let i = 0; i < 14; i++) {
+      const k = fmt(d);
+      if ((S.habits[k]||[]).length < STREAK_NEED) { target = k; break; }
+      d.setDate(d.getDate()-1);
+    }
+    if (!target) { alert("最近14天没有断签，不需要补签卡！"); return; }
+    let arr = S.habits[target] || [];
+    let i = 0;
+    while (arr.length < STREAK_NEED) { arr = arr.concat("补"+(++i)); }
+    S.habits[target] = arr;
+  }
+  S.pts -= it.cost;
+  S.shop.redeemed.unshift({ id:Date.now(), date:today(), name:it.name, cost:it.cost });
+  save(); renderAll();
+}
+function addShopItem(){
+  const name = document.getElementById("shopName").value.trim();
+  const cost = parseInt(document.getElementById("shopCost").value, 10);
+  if (!name || !cost || cost <= 0) { alert("名称和积分都要填，积分须为正整数"); return; }
+  S.shop.items.push({ id:"u"+Date.now(), name, cost });
+  S.shop.items.sort((a,b)=>a.cost-b.cost);
+  save(); renderAll();
+}
+function delShopItem(id){ S.shop.items = S.shop.items.filter(x=>x.id!==id); save(); renderAll(); }
 
 // --- 数据 ---
 function resetAll(){
   if(!confirm("确定清空所有进度和日志吗？此操作无法撤销。")) return;
   S = { tasks:{}, papers:{}, courses:{}, leet:{count:0,notes:[]}, logs:[],
         habits:{}, weekly:{}, life:{d:{},w:{},m:{}}, anki:{cards:[]},
+        pts:0, bonus:{}, shop:{ items:DEFAULT_SHOP.map(x=>({...x})), redeemed:[] },
         activeSem:"s1", tab:"today" };
   try{ localStorage.removeItem(KEY); }catch(e){}
   renderAll();
@@ -796,9 +900,14 @@ function importData(){
   try {
     const d = JSON.parse(raw);
     S = Object.assign({tasks:{},papers:{},courses:{},leet:{count:0,notes:[]},logs:[],
-      habits:{},weekly:{},life:{d:{},w:{},m:{}},anki:{cards:[]},activeSem:"s1",tab:"today"}, d);
+      habits:{},weekly:{},life:{d:{},w:{},m:{}},anki:{cards:[]},
+      pts:0,bonus:{},shop:{items:DEFAULT_SHOP.map(x=>({...x})),redeemed:[]},
+      activeSem:"s1",tab:"today"}, d);
     if(!d.anki) S.anki={cards:[]};
     if(!d.life) S.life={d:{},w:{},m:{}};
+    if(!d.shop) S.shop={items:DEFAULT_SHOP.map(x=>({...x})),redeemed:[]};
+    if(typeof S.pts !== "number") S.pts = 0;
+    if(!S.bonus) S.bonus = {};
     save(); renderAll(); alert("导入成功！");
   } catch(e){ alert("导入失败：内容格式不对。"); }
 }
